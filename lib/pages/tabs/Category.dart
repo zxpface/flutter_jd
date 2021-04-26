@@ -1,8 +1,7 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-
-import '../../model/CateModel.dart';
 import '../../services/ScreenAdapter.dart';
+import '../../model/CategoryModel.dart';
+import 'package:dio/dio.dart';
 
 class CategoryPage extends StatefulWidget {
   CategoryPage({Key key}) : super(key: key);
@@ -13,137 +12,172 @@ class CategoryPage extends StatefulWidget {
 
 class _CategoryPageState extends State<CategoryPage> {
   int _currentIndex = 0;
-  List _leftCateList=[];
-  List _rightCateList=[];
+  List<CategoryItemModel> firstCategoryData = [];
+  List<CategoryItemModel> secondCategoryData = [];
 
   @override
   void initState() {
+    print(
+        "-----------------_CategoryPageState =>initState--------------------");
     super.initState();
-    _getLeftCateData();
-
+    //从服务器获取一级分类数据
+    this.getFirstCategoryData();
   }
-  //左侧分类
-  _getLeftCateData() async{
-    var api = 'http://jd.itying.com/api/pcate';
-    var result = await Dio().get(api);
-    var leftCateList = new CateModel.fromJson(result.data);
-    // print(leftCateList.result);
+
+  //获取1级分类数据
+  void getFirstCategoryData() async {
+    var response = await Dio().get("http://jd.itying.com/api/pcate");
+    CategoryModel firstCategoryModel = CategoryModel.fromJson(response.data);
     setState(() {
-      this._leftCateList = leftCateList.result;
-      // print(_leftCateList);
+      this.firstCategoryData = firstCategoryModel.result;
     });
-    _getRightCateData(leftCateList.result[0].sId);
+    //print(this.firstCategoryData);
+    //从服务器获取二级分类数据，根据第一个一级分类的id获取对应的二级分类
+    this.getSecondCategoryData(this.firstCategoryData[0].sId);
   }
-  //右侧分类
-  _getRightCateData(pid) async{
-    var api = 'http://jd.itying.com/api/pcate?pid=59f1e1ada1da8b15d42234e9';
-    var result = await Dio().get(api);
-    var rightCateList = new CateModel.fromJson(result.data);
-    // print("--------" + "${rightCateList.result}");
+
+  //获取2级分类数据
+  void getSecondCategoryData(pid) async {
+    var response = await Dio().get("http://jd.itying.com/api/pcate?pid=${pid}");
+    CategoryModel secondCategoryModel = CategoryModel.fromJson(response.data);
     setState(() {
-      this._rightCateList = rightCateList.result;
+      this.secondCategoryData = secondCategoryModel.result;
     });
+    //print(this.secondCategoryData);
   }
-  //左边第一级
-  Widget _leftCateWidget(leftWidth){
 
-    if(this._leftCateList.length>0){
-
+  //一级分类界面
+  Widget getFirstCategoryWidget() {
+    if (this.firstCategoryData.length > 0) {
       return Container(
-        width: leftWidth,
+        width: 100, //一级分类的宽度
         height: double.infinity,
-        // color: Colors.red,
+        //color: Colors.red,
         child: ListView.builder(
-          itemCount: this._leftCateList.length,
-          itemBuilder: (context,index){
+          itemCount: this.firstCategoryData.length,
+          itemBuilder: (BuildContext context, int index) {
             return Column(
-              children: <Widget>[
+              children: [
                 InkWell(
-                  onTap: (){
+                  onTap: () {
+                    //点击一级分类按钮的做什么？应该获得这个一级分类对应的二级分类数据
+                    this.getSecondCategoryData(
+                        this.firstCategoryData[index].sId);
+                    //print(
+                    //    "inkwell clicked...${this.firstCategoryData[index].sId}");
                     setState(() {
-                      _currentIndex= index;
-                      this._getRightCateData(this._leftCateList[index].sId);
-                      // print(index);
+                      this._currentIndex = index;
                     });
                   },
                   child: Container(
+                    color: this._currentIndex == index
+                        ? Color.fromRGBO(240, 246, 246, 0.9)
+                        : Colors.white,
+                    height: 50,
                     width: double.infinity,
-                    height: ScreenAdapter.height(84),
-                    padding: EdgeInsets.only(top:ScreenAdapter.height(24)),
-                    child: Text("${this._leftCateList[index].title}",textAlign: TextAlign.center),
-                    color: _currentIndex==index? Color.fromRGBO(240, 246, 246, 0.9):Colors.white,
+                    //文字没有居中?能够精确定位组件位置的组件是哪个组件？Stack Align
+                    //1、先做界面 2、在界面中渲染数据 3、业务逻辑
+                    child: Stack(
+                      // ?
+                      children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            "${this.firstCategoryData[index].title}",
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                Divider(height: 1),
+                //分割线
+                Divider(
+                  height: 1,
+                ),
               ],
-            );
+            ); //整体是一个什么组件？
           },
-
         ),
       );
-    }else{
-      return Container(
-          width: leftWidth,
-          height: double.infinity
-      );
+    } else {
+      return Text("数据加载中...");
     }
   }
-  //右边第二级
-  Widget _rightCateWidget(rightItemWidth,rightItemHeight){
 
-    if(this._rightCateList.length>0){
+  //返回二级分类组件
+  Widget getSecondCategoryWidget(eachGridWidth, eachGridiHeight) {
+    if (this.secondCategoryData.length > 0) {
       return Expanded(
-        flex: 1,
+        flex: 1, //flex布局
         child: Container(
-            padding: EdgeInsets.all(10),
-            height: double.infinity,
-            color: Color.fromRGBO(240, 246, 246, 0.9),
+          padding: EdgeInsets.all(10), //上下左右间距是10
+          color: Color.fromRGBO(240, 246, 246, 0.9),
+          child: Container(
+            color: Colors.white,
             child: GridView.builder(
-
-              gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount:3,
-                  childAspectRatio: rightItemWidth/rightItemHeight,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10
+              //设置背景颜色
+              //padding: EdgeInsets.all(5),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                mainAxisSpacing: 10, // gridview中每个grid之间的间距
+                crossAxisSpacing: 10,
+                childAspectRatio: eachGridWidth / eachGridiHeight,
               ),
-              itemCount: this._rightCateList.length,
-              itemBuilder: (context,index){
+              itemCount: this.secondCategoryData.length,
+              itemBuilder: (BuildContext context, int index) {
+                String pic = this.secondCategoryData[index].pic;
+                pic = "http://jd.itying.com/" + pic.replaceAll('\\', '/');
 
-                //处理图片
-                String pic=this._rightCateList[index].pic;
-                pic="http://jd.itying.com/"+pic.replaceAll('\\', '/');
-
-                return Container(
-                  // padding: EdgeInsets.all(10),
-                  child: Column(
-                    children: <Widget>[
-
-                      AspectRatio(
-                        aspectRatio: 1/1,
-                        child: Image.network("${pic}",fit: BoxFit.cover),
-                      ),
-                      Container(
-                        height: ScreenAdapter.height(28),
-                        child: Text("${this._rightCateList[index].title}"),
-                      )
-                    ],
+                return InkWell(
+                  onTap: (){
+                    print('-----------InkWell clicked...--------');
+                    //页面跳转
+                    Navigator.pushNamed(context, '/productList', arguments: {
+                      "cid": "${this.secondCategoryData[index].sId}",
+                    });//命名路由跳转
+                  },
+                  child: Container(
+                    color: Colors.white,
+                    child: Column(
+                      children: [
+                        AspectRatio(
+                          aspectRatio: 1 / 1,
+                          child: Container(
+                            padding: EdgeInsets.all(5),
+                            child: Image.network(
+                              "${pic}",
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          height: 30,
+                          //color: Colors.red,
+                          width: double.infinity,
+                          child: Stack(
+                            children: [
+                              Align(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  "${this.secondCategoryData[index].title}",
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
-            )
+            ),
+          ),
         ),
       );
-    }else{
-      return Expanded(
-          flex: 1,
-          child: Container(
-            padding: EdgeInsets.all(10),
-            height: double.infinity,
-            color: Color.fromRGBO(240, 246, 246, 0.9),
-            child: Text("加载中..."),
-          )
-      );
-
+    } else {
+      return Text("数据加载中...");
     }
   }
 
@@ -155,8 +189,8 @@ class _CategoryPageState extends State<CategoryPage> {
     double eachGridiHeight = eachGridWidth + 30;
     return Row(
       children: [
-        _leftCateWidget(eachGridWidth),
-        _rightCateWidget(eachGridWidth,eachGridiHeight)
+        this.getFirstCategoryWidget(),
+        this.getSecondCategoryWidget(eachGridWidth, eachGridiHeight),
       ],
     );
   }

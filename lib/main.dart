@@ -22,7 +22,6 @@ class _MyAppState extends State<MyApp> {
       designSize: Size(750, 1334),
       allowFontScaling: false,
       builder: () => MaterialApp(
-        debugShowCheckedModeBanner:false,
         //home: Tabs(),
         initialRoute: '/',
         onGenerateRoute: onGenerateRoute,

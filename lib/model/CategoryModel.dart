@@ -1,12 +1,12 @@
 // FocusModel.fromJson(json);
-class FocusModel {
-  List<FocusItemModel> result;
-  FocusModel({this.result});
-  FocusModel.fromJson(Map<String, dynamic> json) {
+class CategoryModel {
+  List<CategoryItemModel> result;
+  CategoryModel({this.result});
+  CategoryModel.fromJson(Map<String, dynamic> json) {
     if (json['result'] != null) {
-      result = new List<FocusItemModel>();
+      result = new List<CategoryItemModel>();
       json['result'].forEach((v) {
-        result.add(new FocusItemModel.fromJson(v));
+        result.add(new CategoryItemModel.fromJson(v));
       });
     }
   }
@@ -20,20 +20,22 @@ class FocusModel {
   }
 }
 
-class FocusItemModel {
+class CategoryItemModel {
   String sId; // _id=>sId
   String title;
-  String status;
+  Object status; // Object是所有类的根类 
   String pic;
-  String url;
+  String pid;
+  String sort;
 
-  FocusItemModel({this.sId, this.title, this.status, this.pic, this.url});
-  FocusItemModel.fromJson(Map<String, dynamic> json) {
+  CategoryItemModel({this.sId, this.title, this.status, this.pic, this.pid, this.sort});
+  CategoryItemModel.fromJson(Map<String, dynamic> json) {
     sId = json['_id'];
     title = json['title'];
-    status = json['status'];
+    status = json['status']; //type 'int' is not a subtype of type 'String'
     pic = json['pic'];
-    url = json['url'];
+    this.pid = json['pid'];
+    this.sort = json['sort'];
   }
 
   Map<String, dynamic> toJson() {
@@ -42,7 +44,8 @@ class FocusItemModel {
     data['title'] = this.title;
     data['status'] = this.status;
     data['pic'] = this.pic;
-    data['url'] = this.url;
-    return data;
+    data['pid'] = this.pid;
+    data['sort'] = this.sort;
+     return data;
   }
 }

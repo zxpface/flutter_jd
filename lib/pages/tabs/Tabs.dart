@@ -14,22 +14,43 @@ class Tabs extends StatefulWidget {
 class _TabsState extends State<Tabs> {
   int _currentIndex = 0;
   List<Widget> _pagesList = [HomePage(), CategoryPage(), UserPage()]; 
+
+  var _pageController;
+
+  @override
+  void initState() {
+    
+    this._pageController = new PageController(initialPage: this._currentIndex);
+    super.initState();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
         appBar: AppBar(
-            backgroundColor:Colors.redAccent,
-          title: Center(child: Text("仿京东商城",style: TextStyle(fontSize: 20),),),
+          title: Text("仿京东商城xxx"),
         ),
-        body: this._pagesList[this._currentIndex], //页面切换
+        //body: this._pagesList[this._currentIndex], //页面切换
+        body: IndexedStack( //tab切换保持页面状态
+          children: this._pagesList,
+          index: this._currentIndex,
+        ),
+        // body:PageView(
+        //   controller: this._pageController,
+        //   children:this._pagesList,
+        //   onPageChanged: (index){
+        //     print("----onPageChanged: index=${index}---");
+        //   },
+        // ),
         bottomNavigationBar: BottomNavigationBar(
           fixedColor: Colors.red,
           currentIndex: this._currentIndex,
           onTap: (index){
-            print(index);
+            print("----onTap: index=${index}---");
             setState(() {
               this._currentIndex = index;
+              //this._pageController.jumpToPage(this._currentIndex);
             });
           },
           items: [

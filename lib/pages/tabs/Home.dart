@@ -15,12 +15,14 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with AutomaticKeepAliveClientMixin {
   List<FocusItemModel> focusData = [];
   List<ProductItemModel> guessYouLikeData = []; // 0-1->2 so easy
   List<ProductItemModel> hotRecommendData = [];
 
   void initState() {
+    print("-----------------HomePageState =>initState--------------------");
     //生命周期方法：组件创建的时候会回调initState方法
     //dio
     getFocusData();
@@ -47,7 +49,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       this.guessYouLikeData = productModel.result;
     });
-    print(this.guessYouLikeData);
+    //print(this.guessYouLikeData);
   }
 
   //获取热门推荐数据
@@ -67,14 +69,14 @@ class _HomePageState extends State<HomePage> {
         child: AspectRatio(
           aspectRatio: 2 / 1,
           child: Swiper(
-            autoplay: true,
+            autoplay: false,
             itemCount: this.focusData.length,
             itemBuilder: (BuildContext context, int index) {
               //http://jd.itying.com/public//upload//UObZahqPYzFvx_C9CQjU8KiX.png
               //http://jd.itying.com/public\upload\s5ujmYBQVRcLuvBHvWFMJHzS.jpg
               String picStr = this.focusData[index].pic;
               picStr = "http://jd.itying.com/" + picStr.replaceAll('\\', '/');
-              print(picStr);
+              //print(picStr);
               return new Image.network(
                 "${picStr}",
                 fit: BoxFit.fill,
@@ -86,7 +88,7 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     } else {
-      return Center(child: Text("数据加载中...",style: TextStyle(color: Colors.grey),),);
+      return Text("数据加载中...");
     }
   }
 
@@ -123,7 +125,7 @@ class _HomePageState extends State<HomePage> {
           itemBuilder: (BuildContext context, int index) {
             String picStr = this.guessYouLikeData[index].sPic;
             picStr = "http://jd.itying.com/" + picStr.replaceAll('\\', '/');
-            print(picStr);
+            //print(picStr);
             return Column(
               children: [
                 Container(
@@ -156,8 +158,8 @@ class _HomePageState extends State<HomePage> {
           spacing: 10,
           children: this.hotRecommendData.map((currentElement) {
             String pic = currentElement.pic;
-            pic = "http://jd.itying.com/"+ pic.replaceAll('\\', '/');
-            print(pic); //http://jd.itying.com/public/upload/KqOpb7U4Exk-K3OmNweMkTNS.png_200x200.png
+            pic = "http://jd.itying.com/" + pic.replaceAll('\\', '/');
+            //print(pic); //http://jd.itying.com/public/upload/KqOpb7U4Exk-K3OmNweMkTNS.png_200x200.png
             return Container(
               padding: EdgeInsets.all(5),
               decoration: BoxDecoration(
@@ -223,7 +225,7 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     } else {
-      return Center(child: Text("数据加载中...",style: TextStyle(color: Colors.grey)));
+      return Text("数据加载中...");
     }
   }
 
@@ -250,4 +252,7 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
